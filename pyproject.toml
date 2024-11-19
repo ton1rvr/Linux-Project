@@ -1,0 +1,17 @@
+[tool.poetry]
+name = "projet-linux"
+version = "0.1.0"
+description = ""
+authors = ["morganjowitt <jowitt.morgan@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+bs4 = "^0.0.2"
+lxml = "^5.3.0"
+pandas = "^2.2.3"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
