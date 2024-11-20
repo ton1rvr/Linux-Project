@@ -32,6 +32,9 @@ for PAGE in $(seq 1 "$TOTAL_PAGES"); do
   jq -s '.[0] + .[1]' "$OUTPUT_FILE" <(echo "$MOVIE_RESULTS") > tmp.json && mv tmp.json "$OUTPUT_FILE"
 
   echo "Page $PAGE traitée et ajoutée au fichier $OUTPUT_FILE."
+
+  streamlit run dataprocess.py
+
 done
 
 echo "Traitement terminé. Les données sont disponibles dans : $OUTPUT_FILE"
