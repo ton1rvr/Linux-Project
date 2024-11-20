@@ -12,6 +12,8 @@ WITH_RELEASE_TYPE="2|3"
 OUTPUT_FILE="extracted_data/all_movies.json"
 API_KEY="eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiI1N2U1MTYyYTU1ZTgyMDBmY2M0MzczYjhlNDhiM2YyZSIsIm5iZiI6MTczMjA5MTUxOC40NDQyNTQ0LCJzdWIiOiI2NTRhYjgzMDYzMzJmNzAwYzYzN2IwYjkiLCJzY29wZXMiOlsiYXBpX3JlYWQiXSwidmVyc2lvbiI6MX0.CycVLVOVr4AkJjX58Jbb6el4JIb8rC89yBsdhmOtHpc"
 
+# Initialiser le fichier de sortie
+mkdir -p "$(dirname "$OUTPUT_FILE")"
 echo "[]" > "$OUTPUT_FILE"
 
 for PAGE in $(seq 1 "$TOTAL_PAGES"); do
@@ -32,7 +34,9 @@ for PAGE in $(seq 1 "$TOTAL_PAGES"); do
   jq -s '.[0] + .[1]' "$OUTPUT_FILE" <(echo "$MOVIE_RESULTS") > tmp.json && mv tmp.json "$OUTPUT_FILE"
 
   echo "Page $PAGE traitée et ajoutée au fichier $OUTPUT_FILE."
+done
 
-  streamlit run dataprocess.py
-  
-echo "Traitement terminé. Les données sont disponibles dans : $OUTPUT_FILE"
+# Lancer Streamlit après la boucle
+streamlit run dataprocess.py
+
+echo "Traitement terminé. Les données sont disponibles dans : $OUTPUT_FILE."  
