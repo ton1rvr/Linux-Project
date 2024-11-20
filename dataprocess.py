@@ -42,7 +42,7 @@ def main():
         })
 
         # Créer une colonne 'Affiche' avec les images affichées directement dans le tableau
-        df_display['Affiche'] = df_display['Affiche'].apply(lambda x: f'<img src="{x}" width="100" />' if pd.notna(x) else '')
+        df_display['Affiche'] = df_display['Affiche'].apply(lambda x: f'<img src="{x}" width="900" />' if pd.notna(x) else '')
 
         # Afficher le tableau avec les images
         st.markdown(df_display.to_html(escape=False), unsafe_allow_html=True)

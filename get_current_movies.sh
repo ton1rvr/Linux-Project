@@ -1,7 +1,7 @@
 #!/bin/bash
 
 MIN_DATE="2024-01-01"
-MAX_DATE="2024-12-31" 
+MAX_DATE="2024-12-31"
 BASE_URL="https://api.themoviedb.org/3/discover/movie"
 INCLUDE_ADULT="false"
 INCLUDE_VIDEO="false"
@@ -29,12 +29,41 @@ for PAGE in $(seq 1 "$TOTAL_PAGES"); do
     continue
   fi
 
-  MOVIE_RESULTS=$(echo "$RESPONSE" | jq '.results')
+  # Tenter d'utiliser jq, sinon utiliser Python
+  if command -v jq &> /dev/null; then
+    echo "Utilisation de jq pour traiter la réponse JSON."
+    MOVIE_RESULTS=$(echo "$RESPONSE" | jq '.results')
 
-  jq -s '.[0] + .[1]' "$OUTPUT_FILE" <(echo "$MOVIE_RESULTS") > tmp.json && mv tmp.json "$OUTPUT_FILE"
+    jq -s '.[0] + .[1]' "$OUTPUT_FILE" <(echo "$MOVIE_RESULTS") > tmp.json && mv tmp.json "$OUTPUT_FILE"
+
+  else
+    echo "jq non trouvé. Utilisation de Python pour traiter la réponse JSON."
+    
+    python3 - <<END
+import json
+
+# Charger la réponse JSON actuelle
+new_data = json.loads('''$RESPONSE''')
+
+# Charger les données existantes depuis le fichier
+try:
+    with open("$OUTPUT_FILE", "r") as f:
+        existing_data = json.load(f)
+except FileNotFoundError:
+    existing_data = []
+
+# Ajouter les résultats de la nouvelle page aux données existantes
+existing_data.extend(new_data["results"])
+
+# Sauvegarder les données mises à jour dans le fichier de sortie
+with open("$OUTPUT_FILE", "w") as f:
+    json.dump(existing_data, f, indent=4)
+
+print(f"Page {PAGE} traitée et ajoutée au fichier $OUTPUT_FILE.")
+END
+  fi
 
   echo "Page $PAGE traitée et ajoutée au fichier $OUTPUT_FILE."
 done
 
-
-echo "Traitement terminé. Les données sont disponibles dans : $OUTPUT_FILE."  
+echo "Traitement terminé. Les données sont disponibles dans : $OUTPUT_FILE."
