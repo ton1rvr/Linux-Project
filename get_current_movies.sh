@@ -14,10 +14,13 @@ response=$(curl -s -X GET "$URL" \
 --data-urlencode "primary_release_date.gte=$MIN_RELEASE_DATE" \
 --data-urlencode "primary_release_date.lte=$MAX_RELEASE_DATE")
 
-# Vérifier si la requête a réussi
 if [ $? -eq 0 ]; then
-  # Extraire les données souhaitées et les afficher
-  echo "$response" | jq '.results[] | {title: .title, release_date: .release_date, overview: .overview}'
+  # Sauvegarder la réponse dans movies.json
+  echo "$response" > movies.json
+  echo "Les données ont été enregistrées dans movies.json."
+  
+  # Appeler le script Python pour traiter les données
+  python3 dataprocess.py movies.json
 else
   echo "La requête API a échoué."
 fi
