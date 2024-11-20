@@ -6,36 +6,32 @@ BASE_URL="https://api.themoviedb.org/3/discover/movie"
 INCLUDE_ADULT="false"
 INCLUDE_VIDEO="false"
 LANGUAGE="en-US"
-PAGE=2
+TOTAL_PAGES=5
 SORT_BY="popularity.desc"
 WITH_RELEASE_TYPE="2|3"
+OUTPUT_FILE="extracted_data/all_movies.json"
 API_KEY="eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiI1N2U1MTYyYTU1ZTgyMDBmY2M0MzczYjhlNDhiM2YyZSIsIm5iZiI6MTczMjA5MTUxOC40NDQyNTQ0LCJzdWIiOiI2NTRhYjgzMDYzMzJmNzAwYzYzN2IwYjkiLCJzY29wZXMiOlsiYXBpX3JlYWQiXSwidmVyc2lvbiI6MX0.CycVLVOVr4AkJjX58Jbb6el4JIb8rC89yBsdhmOtHpc"
 
-FULL_URL="${BASE_URL}?include_adult=${INCLUDE_ADULT}&include_video=${INCLUDE_VIDEO}&language=${LANGUAGE}&page=${PAGE}&sort_by=${SORT_BY}&with_release_type=${WITH_RELEASE_TYPE}&release_date.gte=${MIN_DATE}&release_date.lte=${MAX_DATE}"
+echo "[]" > "$OUTPUT_FILE"
 
-RESPONSE=$(curl --silent --request GET \
+for PAGE in $(seq 1 "$TOTAL_PAGES"); do
+  FULL_URL="${BASE_URL}?include_adult=${INCLUDE_ADULT}&include_video=${INCLUDE_VIDEO}&language=${LANGUAGE}&page=${PAGE}&sort_by=${SORT_BY}&with_release_type=${WITH_RELEASE_TYPE}&release_date.gte=${MIN_DATE}&release_date.lte=${MAX_DATE}"
+
+  RESPONSE=$(curl --silent --request GET \
   --url "$FULL_URL" \
   --header "Authorization: Bearer $API_KEY" \
   --header "accept: application/json")
 
-if [ -z "$RESPONSE" ]; then
-  echo "Erreur : aucune réponse de l'API."
-  exit 1
-fi
+  if [ -z "$RESPONSE" ]; then
+    echo "Erreur : aucune réponse de l'API pour la page $PAGE."
+    continue
+  fi
 
-echo "Réponse de l'API :"
-echo "$RESPONSE"
+  MOVIE_RESULTS=$(echo "$RESPONSE" | jq '.results')
 
-MOVIE_TITLE=$(echo "$RESPONSE" | jq -r '.results[0].title')
-echo "Le film le plus populaire dans cette période est : $MOVIE_TITLE"
+  jq -s '.[0] + .[1]' "$OUTPUT_FILE" <(echo "$MOVIE_RESULTS") > tmp.json && mv tmp.json "$OUTPUT_FILE"
 
-if [ $? -eq 0 ]; then
+  echo "Page $PAGE traitée et ajoutée au fichier $OUTPUT_FILE."
+done
 
-  echo "$RESPONSE" > extracted_data/movies.json
-  echo "Les données ont été enregistrées dans movies.json."
-  
-  python3 dataprocess.py movies.json
-else
-  echo "La requête API a échoué."
-fi
-
+echo "Traitement terminé. Les données sont disponibles dans : $OUTPUT_FILE"
