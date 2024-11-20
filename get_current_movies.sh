@@ -34,7 +34,5 @@ for PAGE in $(seq 1 "$TOTAL_PAGES"); do
   echo "Page $PAGE traitée et ajoutée au fichier $OUTPUT_FILE."
 
   streamlit run dataprocess.py
-
-done
-
+  
 echo "Traitement terminé. Les données sont disponibles dans : $OUTPUT_FILE"
