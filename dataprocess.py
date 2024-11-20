@@ -7,7 +7,7 @@ def load_movies_data(file_path='extracted_data/all_movies.json'):
     try:
         with open(file_path, 'r') as f:
             data = json.load(f)
-        return data.get("results", [])
+        return data if isinstance(data, list) else data.get("results", [])
     except Exception as e:
         st.error(f"Erreur lors de la lecture du fichier JSON : {e}")
         return []
