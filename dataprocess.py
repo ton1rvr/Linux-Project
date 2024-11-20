@@ -1,46 +1,57 @@
-import sys
+import streamlit as st
 import json
 import pandas as pd
 
-def process_movies(file_path):
-    # Lire le fichier JSON
+# Fonction pour charger les données depuis movies.json
+def load_movies_data(file_path='movies.json'):
     try:
         with open(file_path, 'r') as f:
             data = json.load(f)
+        return data.get("results", [])
     except Exception as e:
-        print(f"Erreur lors de la lecture du fichier JSON : {e}")
-        sys.exit(1)
+        st.error(f"Erreur lors de la lecture du fichier JSON : {e}")
+        return []
 
-    # Vérifier si les résultats existent
-    results = data.get("results", [])
-    if not results:
-        print("Aucun film trouvé dans les données.")
-        sys.exit(0)
+# Interface Streamlit
+def main():
+    st.title("Films actuellement en salle")
 
-    # Extraire les informations des films
-    movies = [
-        {
-            "Title": movie.get("title"),
-            "Release Date": movie.get("release_date"),
-            "Overview": movie.get("overview")
-        }
-        for movie in results
-    ]
+    # Charger les films depuis movies.json
+    movies = load_movies_data()
 
-    # Convertir en DataFrame pour un traitement plus facile
-    df = pd.DataFrame(movies)
-    print("\nFilms disponibles :\n")
-    print(df)
+    # Afficher les films sous forme de tableau si les données existent
+    if movies:
+        # Convertir les films en DataFrame pour un affichage plus facile
+        df = pd.DataFrame(movies)
+        
+        # Ajouter une colonne avec l'URL complète pour les images des posters
+        df['poster_url'] = df['poster_path'].apply(
+            lambda x: f"https://image.tmdb.org/t/p/w500{x}" if pd.notna(x) else None
+        )
+        
+        # Sélectionner les colonnes à afficher
+        df_display = df[['title', 'release_date', 'overview', 'vote_average', 'poster_url']]
+        
+        # Renommer les colonnes pour l'affichage en français
+        df_display = df_display.rename(columns={
+            'title': 'Titre',
+            'release_date': 'Date de sortie',
+            'overview': 'Résumé',
+            'vote_average': 'Note',
+            'poster_url': 'Affiche'
+        })
 
-    # Sauvegarder les résultats dans un fichier CSV (optionnel)
-    df.to_csv("movies.csv", index=False)
-    print("\nLes données ont été enregistrées dans movies.csv.")
+        # Créer une colonne 'Affiche' avec les images affichées directement dans le tableau
+        df_display['Affiche'] = df_display['Affiche'].apply(lambda x: f'<img src="{x}" width="100" />' if pd.notna(x) else '')
+
+        # Afficher le tableau avec les images
+        st.markdown(df_display.to_html(escape=False), unsafe_allow_html=True)
+
+        # Ajouter un bouton pour télécharger les films en CSV
+        st.download_button("Télécharger les films en CSV", df_display.to_csv(index=False), "films.csv", "text/csv")
+        
+    else:
+        st.warning("Aucun film trouvé dans le fichier movies.json.")
 
 if __name__ == "__main__":
-    if len(sys.argv) != 2:
-        print("Utilisation : python3 process_movies.py <fichier_movies.json>")
-        sys.exit(1)
-
-    json_file = sys.argv[1]
-    process_movies(json_file)
-
+    main()
