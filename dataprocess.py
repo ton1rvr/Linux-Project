@@ -3,7 +3,7 @@ import json
 import pandas as pd
 
 # Fonction pour charger les données depuis movies.json
-def load_movies_data(file_path='movies.json'):
+def load_movies_data(file_path='extracted_data/movies.json'):
     try:
         with open(file_path, 'r') as f:
             data = json.load(f)
