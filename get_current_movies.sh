@@ -34,7 +34,7 @@ if [ $? -eq 0 ]; then
   echo "$RESPONSE" > extracted_data/movies.json
   echo "Les données ont été enregistrées dans movies.json."
   
-  python3 dataprocess.py movies.json
+  streamlit run dataprocess.py
 else
   echo "La requête API a échoué."
 fi
