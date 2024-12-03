@@ -8,7 +8,7 @@ WORKDIR /app
 COPY setup.sh extraction/fetch_data.sh launch_app.sh streamlit/app.py /app/
 
 # Rendre les scripts exécutables
-RUN chmod +x /app/setup.sh /app/extraction/fetch_data.sh /app/launch_app.sh
+RUN chmod +x /app/setup.sh /app/fetch_data.sh /app/launch_app.sh
 
 # Exécuter le script setup.sh pour l'installation
 RUN /app/setup.sh
