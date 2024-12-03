@@ -2,7 +2,7 @@
 
 # Mettre à jour les dépôts et installer les dépendances
 apt-get update -y && \
-apt-get install -yl python3-pip curl bash && \
+apt-get install -y python3-pip curl bash && \
 apt-get clean
 
 # Installer Streamlit

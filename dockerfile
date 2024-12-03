@@ -17,4 +17,4 @@ RUN /app/setup.sh
 RUN mkdir -p /app/data
 
 # Définir le point d'entrée
-ENTRYPOINT ["/bin/bash", "-c", "/app/get_current_movies.sh && /app/launch_app.sh"]
+ENTRYPOINT ["/bin/bash", "-c", "/app/launch_app.sh"]
