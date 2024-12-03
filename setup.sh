@@ -6,4 +6,4 @@ apt-get install -yl python3-pip curl bash && \
 apt-get clean
 
 # Installer Streamlit
-pip3 install streamlit
+pip install streamlit
