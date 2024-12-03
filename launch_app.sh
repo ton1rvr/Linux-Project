@@ -13,3 +13,7 @@ if [ $? -ne 0 ]; then
   exit 1
 fi
 echo "Extraction des données terminée avec succès."
+
+# Lancer Streamlit
+echo "Démarrage de l'interface Streamlit..."
+streamlit run streamlit/app.py
