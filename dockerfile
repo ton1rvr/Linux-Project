@@ -14,4 +14,4 @@ RUN chmod +x /app/setup.sh /app/fetch_data.sh /app/launch_app.sh
 RUN /app/setup.sh
 
 # Définir le point d'entrée
-ENTRYPOINT ["/bin/bash", "-c", "/app/launch_app.sh"]
+ENTRYPOINT ["/bin/bash", "-c", "/app/launch_app.sh && /app/fetch_data.sh"]
