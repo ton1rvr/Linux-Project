@@ -7,7 +7,7 @@ chmod +x fetch_data.sh
 
 # Lancer l'extraction des données
 echo "Lancement de l'extraction des données..."
-fetch_data.sh
+./fetch_data.sh
 if [ $? -ne 0 ]; then
   echo "Erreur lors de l'extraction des données."
   exit 1
