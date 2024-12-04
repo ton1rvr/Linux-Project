@@ -5,13 +5,13 @@ FROM ubuntu:20.04
 WORKDIR /app
 
 # Copier les scripts dans le conteneur
-COPY setup.sh extraction/fetch_data.sh launch_app.sh streamlit/app.py /app/
+COPY . /app/
 
 # Rendre les scripts exécutables
-RUN chmod +x /app/setup.sh /app/fetch_data.sh /app/launch_app.sh
+RUN chmod +x /app/setup.sh /app/extraction/fetch_data.sh /app/launch_app.sh
 
 # Exécuter le script setup.sh pour l'installation
 RUN /app/setup.sh
 
 # Définir le point d'entrée
-ENTRYPOINT ["/bin/bash", "-c", "/app/launch_app.sh && /app/fetch_data.sh"]
+ENTRYPOINT ["/bin/bash", "-c", "/app/launch_app.sh && /app/extraction/fetch_data.sh"]
