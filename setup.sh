@@ -32,4 +32,4 @@ esac
 
 # Installer Streamlit
 echo "Installation de Streamlit..."
-pip3 install streamlit
+pip3 install streamlit pandas plotly
