@@ -14,7 +14,7 @@ RUN chmod +x /app/setup.sh /app/extraction/fetch_data.sh /app/launch_app.sh
 RUN /app/setup.sh
 
 # Exposer le port utilisé par Streamlit
-EXPOSE 8501
+EXPOSE 5005
 
 # Définir le point d'entrée
 ENTRYPOINT ["/bin/bash", "-c", "/app/launch_app.sh"]
