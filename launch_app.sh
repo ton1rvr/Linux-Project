@@ -16,4 +16,4 @@ echo "Extraction des données terminée avec succès."
 
 # Lancer Streamlit
 echo "Démarrage de l'interface Streamlit..."
-streamlit run streamlit/app.py --server.address 0.0.0.0 --server.port 5005
+streamlit run streamlit/v1.py --server.address 0.0.0.0 --server.port 5005
