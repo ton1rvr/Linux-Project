@@ -68,11 +68,7 @@ try:
     )
     # Ajouter un GIF personnalisé dans la sidebar (version grande taille)
     gif_html = """
-    <div style="text-align: center; margin-top: 20px;">
-        <img src="https://media.giphy.com/media/4N5ddOOJJ7gtKTgNac/giphy.gif" 
-             alt="Linux Animation" style="width:250px; border-radius:10px;">
-        <p style="font-size:14px; color:gray; margin-top: 10px;">💻 Powered by Linux</p>
-    </div>
+    💻 Powered by Linux
     """
     st.sidebar.markdown(gif_html, unsafe_allow_html=True)
 
