@@ -6,7 +6,6 @@ import datetime as dt
 import yfinance as yf
 from arch import arch_model
 
-
 # Set page configuration
 st.set_page_config(
     page_title="Portfolio Monte Carlo Simulator",
@@ -23,7 +22,6 @@ st.markdown("""
         padding: 20px;
         box-shadow: 0 4px 6px rgba(0,0,0,0.1);
     }
-    
     </style>
 """, unsafe_allow_html=True)
 
@@ -40,7 +38,7 @@ selected_tickers = st.sidebar.multiselect(
     "Select Stock Tickers (up to 5)",
     options=available_tickers,
     default=['AAPL', 'MSFT'],
-    help="A ticker is a unique symbol used to identify a stock on the exchange, you can add one to the list by writing it."
+    help="A ticker is a unique symbol used to identify a stock on the exchange."
 )
 
 if len(selected_tickers) == 0:
@@ -75,11 +73,15 @@ mc_sims = st.sidebar.slider(
     help="Number of simulated trajectories to model potential portfolio values."
 )
 
-# --- Historical Observation Period
+# Ajouter un GIF personnalisé dans la sidebar
+gif_url = "https://media1.giphy.com/media/v1.Y2lkPTc5MGI3NjExaGNzZzl1ODNhaGpseHQ2NTkwZnQ1dmd0bGR6dmJ1azR2N2N2N2ZvdiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/4N5ddOOJJ7gtKTgNac/giphy.webp"
+st.sidebar.image(gif_url, caption="GIF hébergé en ligne", use_container_width=True)
+
+# --- Période d'observation historique
 endDate = dt.datetime.now()
 startDate = endDate - dt.timedelta(days=1000)
 
-# --- Function to Import Price Data
+# --- Fonction pour importer les données de prix
 @st.cache_data
 def get_data(stocks, start, end):
     stockData = yf.download(stocks, start, end)['Close']
@@ -88,101 +90,112 @@ def get_data(stocks, start, end):
     covMatrix = returns.cov()
     return meanReturns, covMatrix, returns
 
-# --- Retrieve Market Data
-meanReturns, covMatrix, returns = get_data(selected_tickers, startDate, endDate)
+# --- Vérification des tickers
+if selected_tickers:
+    meanReturns, covMatrix, returns = get_data(selected_tickers, startDate, endDate)
 
-# --- Calculate Volatility Using GARCH Model
-garch_vol = {}
-for stock in selected_tickers:
-    try:
-        model = arch_model(returns[stock].dropna() * 100, vol='Garch', p=1, q=1)
-        res = model.fit(disp='off')
-        garch_vol[stock] = res.conditional_volatility.iloc[-1] / 100  
-    except Exception as e:
-        st.warning(f"Error with GARCH model for {stock}: {e}")
+    # --- Calcul de la volatilité par le modèle GARCH
+    garch_vol = {}
+    for stock in selected_tickers:
+        try:
+            model = arch_model(returns[stock].dropna() * 100, vol='Garch', p=1, q=1)
+            res = model.fit(disp='off')
+            garch_vol[stock] = res.conditional_volatility.iloc[-1] / 100  # On normalise la volatilité
+        except Exception as e:
+            st.warning(f"Erreur avec le GARCH pour {stock}: {e}")
 
-# --- Initial Weighting (also user-modifiable)
-weights = np.array([1 / len(selected_tickers)] * len(selected_tickers))  
+    # --- Pondération initiale (également modifiable par l'utilisateur)
+    weights = np.array([1 / len(selected_tickers)] * len(selected_tickers))  # Pondération égale
 
-# --- Monte Carlo Simulation
-np.random.seed(42)
-meanM = np.tile(meanReturns.values.reshape(-1, 1), T)  
-portfolio_sims = np.zeros((T, mc_sims)) 
+    # --- Simulation Monte Carlo
+    np.random.seed(42)
+    meanM = np.tile(meanReturns.values.reshape(-1, 1), T)  # (n, T)
+    portfolio_sims = np.zeros((T, mc_sims))  # Matrice de simulation (T, M)
 
-L = np.linalg.cholesky(covMatrix) 
-for m in range(mc_sims):
-    Z = np.random.normal(size=(len(selected_tickers), T)) 
-    dailyReturns = meanM + (L @ Z) 
-    portfolio_sims[:, m] = np.cumprod(np.dot(weights, dailyReturns) + 1) * initial_investment
+    L = np.linalg.cholesky(covMatrix.values)  # Décomposition de Cholesky
+    for m in range(mc_sims):
+        Z = np.random.normal(size=(len(selected_tickers), T))  # Variables normales indépendantes (n, T)
+        dailyReturns = meanM + (L @ Z)  # On applique la corrélation (n, T)
+        portfolio_sims[:, m] = np.cumprod(np.dot(weights, dailyReturns) + 1) * initial_investment
 
-# --- Calculate Statistics on Final Values
-final_values = portfolio_sims[-1, :]
-mean_value = np.mean(final_values)
-max_value = np.max(final_values)
-min_value = np.min(final_values)
-profit_probability = np.sum(final_values > initial_investment) / mc_sims
+    # --- Calcul des statistiques sur les valeurs finales
+    final_values = portfolio_sims[-1, :]
+    mean_value = np.mean(final_values)
+    max_value = np.max(final_values)
+    min_value = np.min(final_values)
+    profit_probability = np.sum(final_values > initial_investment) / mc_sims
 
+    st.write("### Simulation Results")
+    st.markdown("""
+    <div style='
+        background-color: white;
+        border-radius: 10px;
+        padding: 15px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        margin-bottom: 15px;
+    '>
+    """ + 
+    f"""
+    **Average Portfolio Value:** <span style='color: blue'>{mean_value:.2f} €</span><br>
 
-st.write("### Simulation Results")
+    **Maximum Value Reached:** <span style='color: blue'>{max_value:.2f} €</span><br>
 
-st.markdown("""
-<div style='
-    background-color: white;
-    border-radius: 10px;
-    padding: 15px;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-    margin-bottom: 15px;
-'>
-""" + 
-f"""
-**Average Portfolio Value:** <span style='color: blue'>{mean_value:.2f} €</span><br>
+    **Minimum Value Reached:** <span style='color: blue'>{min_value:.2f} €</span><br>
 
-**Maximum Value Reached:** <span style='color: blue'>{max_value:.2f} €</span><br>
+    **Profit Probability (> {initial_investment} €):** <span style='color: blue'>{profit_probability:.2%}</span>
+    """ + 
+    """
+    </div>
+    """, unsafe_allow_html=True)
+    
+    # --- Returns Histogram
+    portfolio_returns = (final_values - initial_investment) / initial_investment * 100
+    st.write("### Returns Distribution")
 
-**Minimum Value Reached:** <span style='color: blue'>{min_value:.2f} €</span><br>
+    plt.hist(portfolio_returns, bins=30, color='blue', edgecolor='black', alpha=0.7)
+    plt.xlabel("Return (%)")
+    plt.ylabel("Frequency")
+    plt.title("Portfolio Returns Distribution")
+    st.pyplot(plt)
 
-**Profit Probability (> {initial_investment} €):** <span style='color: blue'>{profit_probability:.2%}</span>
-""" + 
-"""
-</div>
-""", unsafe_allow_html=True)
+    # --- Monte Carlo Simulations Plot
+    st.write("### Monte Carlo Simulations")
+    plt.plot(portfolio_sims, alpha=0.3)
 
+    cmap = plt.get_cmap("Spectral")  
+    num_colors = portfolio_sims.shape[1]  
 
-plt.figure(figsize=(8, 5))
-# --- Returns Histogram
-portfolio_returns = (final_values - initial_investment) / initial_investment * 100
-st.write("### Returns Distribution")
+    for i in range(num_colors):
+        plt.plot(portfolio_sims[:, i], color=cmap(i / num_colors), alpha=0.4) 
+    plt.plot(np.mean(portfolio_sims, axis=1), color='red', linewidth=2, label='Mean trajectory') 
+    plt.ylabel('Portfolio Value (€)')
+    plt.xlabel('Days')
+    plt.legend(loc='upper left')
+    plt.title('Portfolio Monte Carlo Simulation')
+    st.pyplot(plt)
 
-plt.hist(portfolio_returns, bins=30, color='blue', edgecolor='black', alpha=0.7)
-plt.xlabel("Return (%)")
-plt.ylabel("Frequency")
-plt.title("Portfolio Returns Distribution")
-st.pyplot(plt)
+    # --- GARCH Volatility Table
+    st.write("### Volatility Analysis")
+    vol_df = pd.DataFrame({
+        'Ticker': garch_vol.keys(),
+        'GARCH Volatility (%)': [v * 100 for v in garch_vol.values()]
+    })
 
-# --- Monte Carlo Simulations Plot
-st.write("### Monte Carlo Simulations")
-plt.plot(portfolio_sims, alpha=0.3)
+    st.write("#### Estimated GARCH Volatility per Stock")
+    st.dataframe(vol_df.style
+        .format({'GARCH Volatility (%)': '{:.2f}'})
+        .background_gradient(cmap='coolwarm', axis=0), use_container_width=True)
 
-cmap = plt.get_cmap("Spectral")  
-num_colors = portfolio_sims.shape[1]  
+    st.write("""
+        **La volatilité** mesure les fluctuations des prix des actions sur une période donnée.
+        - **Volatilité GARCH** : Basée sur les données historiques, elle représente une estimation dynamique de la volatilité conditionnelle future.
+    """)
 
-for i in range(num_colors):
-    plt.plot(portfolio_sims[:, i], color=cmap(i / num_colors), alpha=0.4) 
-plt.plot(np.mean(portfolio_sims, axis=1), color='red', linewidth=2, label='Mean trajectory') 
-plt.ylabel('Portfolio Value (€)')
-plt.xlabel('Days')
-plt.legend(loc='upper left')
-plt.title('Portfolio Monte Carlo Simulation')
-st.pyplot(plt)
+    st.write(
+        """
+        ***Interprétation de la volatilité GARCH :***  
+        Une volatilité plus élevée (par exemple, 2% ou plus) signifie que le prix de l'action peut fluctuer fortement, ce qui indique un risque plus élevé mais aussi une possibilité de gains plus importants.  
 
-# --- GARCH Volatility Table
-st.write("### Volatility Analysis")
-vol_df = pd.DataFrame({
-    'Ticker': garch_vol.keys(),
-    'GARCH Volatility (%)': [v * 100 for v in garch_vol.values()]
-})
-
-st.write("#### Estimated GARCH Volatility per Stock")
-st.dataframe(vol_df.style
-    .format({'GARCH Volatility (%)': '{:.2f}'})
-    .background_gradient(cmap='coolwarm', axis=0), use_container_width=True)
+        Une volatilité plus faible (moins de 1%) reflète une action relativement stable, généralement associée à un risque plus faible mais aussi à des rendements potentiels plus modestes.
+        """
+    ) 
