@@ -10,27 +10,12 @@ from arch import arch_model
 # Set page configuration
 st.set_page_config(
     page_title="Portfolio Monte Carlo Simulator",
-    page_icon="📈",
-    layout="wide",
-    initial_sidebar_state="expanded"
+    page_icon="📈"
 )
 
 # Custom CSS for improved aesthetics
 st.markdown("""
     <style>
-            
-    /* Main background and text color */
-    .reportview-container {
-        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-        color: #333;
-    }
-
-    /* Header styles */
-    h1, h2, h3, h4 {
-        color: #2c3e50;
-        font-weight: 600;
-    }
-    
     /* Sidebar styling */
     .css-1aumxhk {
         background-color: rgba(255, 255, 255, 0.8);
@@ -41,7 +26,6 @@ st.markdown("""
     
     </style>
 """, unsafe_allow_html=True)
-
 
 # --- Titre de l'application
 st.title("Monte Carlo Stock Portfolio Simulation")
@@ -177,28 +161,4 @@ st.pyplot(plt)
 
 # --- Monte Carlo Simulations Plot
 st.write("### Monte Carlo Simulations")
-plt.plot(portfolio_sims, alpha=0.3)
-
-cmap = plt.get_cmap("Spectral")  
-num_colors = portfolio_sims.shape[1]  
-
-for i in range(num_colors):
-    plt.plot(portfolio_sims[:, i], color=cmap(i / num_colors), alpha=0.4) 
-plt.plot(np.mean(portfolio_sims, axis=1), color='red', linewidth=2, label='Mean trajectory') 
-plt.ylabel('Portfolio Value (€)')
-plt.xlabel('Days')
-plt.legend(loc='upper left')
-plt.title('Portfolio Monte Carlo Simulation')
-st.pyplot(plt)
-
-# --- GARCH Volatility Table
-st.write("### Volatility Analysis")
-vol_df = pd.DataFrame({
-    'Ticker': garch_vol.keys(),
-    'GARCH Volatility (%)': [v * 100 for v in garch_vol.values()]
-})
-
-st.write("#### Estimated GARCH Volatility per Stock")
-st.dataframe(vol_df.style
-    .format({'GARCH Volatility (%)': '{:.2f}'})
-    .background_gradient(cmap='coolwarm', axis=0), use_container_width=True)
+plt.plot(portfo
