@@ -73,9 +73,14 @@ mc_sims = st.sidebar.slider(
     help="Number of simulated trajectories to model potential portfolio values."
 )
 
-# Ajouter un GIF personnalisé dans la sidebar
-gif_url = "https://media1.giphy.com/media/v1.Y2lkPTc5MGI3NjExaGNzZzl1ODNhaGpseHQ2NTkwZnQ1dmd0bGR6dmJ1azR2N2N2N2ZvdiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/4N5ddOOJJ7gtKTgNac/giphy.webp"
-st.sidebar.image(gif_url, caption="GIF hébergé en ligne", use_container_width=True)
+gif_html = """
+<div style="text-align: center; margin-top: 20px;">
+    <img src="https://media.giphy.com/media/4N5ddOOJJ7gtKTgNac/giphy.gif" 
+         alt="Linux Animation" style="width:250px; border-radius:10px;">
+    <p style="font-size:14px; color:gray; margin-top: 10px;">💻 Powered by Linux</p>
+</div>
+"""
+st.sidebar.markdown(gif_html, unsafe_allow_html=True)
 
 # --- Période d'observation historique
 endDate = dt.datetime.now()
