@@ -72,8 +72,6 @@ try:
     """
     st.sidebar.markdown(gif_html, unsafe_allow_html=True)
 
-
-    st.sidebar.markdown(gif_html, unsafe_allow_html=True)
     # Filtrage des données selon la plage de dates
     filtered_df = df[(df["Date"] >= pd.Timestamp(start_date)) & (df["Date"] <= pd.Timestamp(end_date))]
 
