@@ -21,11 +21,11 @@ Pour lancer l'application, vous devez exécuter le script `launch_all.sh` avec u
 
     Pour lancer la version 1
     ```bash
-    sh launch_all.sh 1
+        sh launch_all.sh 1
 
     Pour lancer la version 2
     ```bash
-    sh launch_all.sh 2
+        sh launch_all.sh 2
 
 3. **Accéder à l'interface graphique :**
     Une fois l'application démarrée, ouvrez un navigateur web et accédez à l'adresse suivante pour utiliser l'interface graphique : http://23.100.8.30:5005/
@@ -34,7 +34,3 @@ Pour lancer l'application, vous devez exécuter le script `launch_all.sh` avec u
     Une fois l'application utilisé pour utiliser une autre version ou tout simplement l'arrêter executez ce script :
     ```bash
         sh stop_all.sh
-
-
-
-
