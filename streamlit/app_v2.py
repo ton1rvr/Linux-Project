@@ -8,7 +8,7 @@ from arch import arch_model
 
 # Set page configuration
 st.set_page_config(
-    page_title="Portfolio Monte Carlo Simulator",
+    page_title="Invest Vision",
     page_icon="📈"
 )
 
