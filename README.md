@@ -19,13 +19,15 @@ Pour lancer l'application, vous devez exécuter le script `launch_all.sh` avec u
 2. **Cloner ce dépôt (si ce n'est pas déjà fait) :**
     Exécutez le script launch_all.sh pour démarrer l'application. Spécifiez la version de l'application souhaitée en passant 1 ou 2 comme argument.
 
-    Pour lancer la version 1
-    ```bash
-        sh launch_all.sh 1
+- **Pour lancer la version 1** :
+  
+  ```bash
+  sh launch_all.sh 1
 
-    Pour lancer la version 2
-    ```bash
-        sh launch_all.sh 2
+ - **Pour lancer la version 2** :
+  
+  ```bash
+  sh launch_all.sh 2
 
 3. **Accéder à l'interface graphique :**
     Une fois l'application démarrée, ouvrez un navigateur web et accédez à l'adresse suivante pour utiliser l'interface graphique : http://23.100.8.30:5005/
