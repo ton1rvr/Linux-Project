@@ -4,6 +4,9 @@ FROM ubuntu:20.04
 # Déclare un argument pour la version de l'application
 ARG APP_VERSION
 
+# Exporter APP_VERSION comme variable d'environnement
+ENV APP_VERSION=${APP_VERSION}
+
 # Définir le répertoire de travail
 WORKDIR /app
 
@@ -20,4 +23,4 @@ RUN /app/setup.sh
 EXPOSE 5005
 
 # Définir le point d'entrée
-ENTRYPOINT ["/bin/bash", "-c", "/app/launch_app.sh $APP_VERSION"]
+ENTRYPOINT ["/bin/bash", "-c", "/app/launch_app.sh"]
