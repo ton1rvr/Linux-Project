@@ -14,7 +14,6 @@ Pour lancer l'application, vous devez exécuter le script `launch_all.sh` avec u
    
    ```bash
    git clone https://github.com/morganjowitt/linux-project.git
-   cd <nom_du_dossier_du_repertoire>
     ```
 
 2. **Cloner ce dépôt (si ce n'est pas déjà fait) :**
