@@ -32,14 +32,83 @@ st.markdown("This application allows you to simulate the evolution of a stock po
 # --- Simulation Parameters in Sidebar
 st.sidebar.header("📊 Simulation Parameters")
 
-# --- Ticker Selection via Dropdown
-available_tickers = ['AAPL', 'MSFT', 'GOOG', 'AMZN', 'TSLA', 'META', 'NVDA', 'BNP.PA', 'AIR.PA', 'OR.PA']
+@st.cache_data
+def get_all_tickers():
+    """
+    Fetches a comprehensive list of tickers available from Yahoo Finance.
+    For demonstration purposes, we're using S&P 500 tickers via wikepedia list.
+    """
+    url = "https://en.wikipedia.org/wiki/List_of_S%26P_500_companies"
+    sp500 = pd.read_html(url)[0]
+    tickers = sp500['Symbol'].tolist()
+    return tickers
+
+def get_ticker_info(ticker):
+    """
+    Fetch brief information about a stock ticker using yfinance.
+    Returns a dictionary containing the company's name, sector, industry,
+    and annual revenue for 2023 and 2022 if available.
+    """
+    def format_revenue(value):
+        """Format revenue into billions or millions."""
+        try:
+            value = float(value)
+            if value >= 1e9:
+                return f"{value / 1e9:.2f} B$"  # En milliards
+            elif value >= 1e6:
+                return f"{value / 1e6:.2f} M$"  # En millions
+            else:
+                return f"{value:.2f} $"  # Pas d'échelle
+        except (ValueError, TypeError):
+            return "N/A"
+        
+    try:
+        ticker_obj = yf.Ticker(ticker)
+        ticker_info = ticker_obj.info
+
+        # Récupération des revenus
+        financials = ticker_obj.financials  # Récupère les états financiers
+        revenue_2023 = financials.loc['Total Revenue'].iloc[0] if 'Total Revenue' in financials.index else "N/A"
+        revenue_2022 = financials.loc['Total Revenue'].iloc[1] if 'Total Revenue' in financials.index else "N/A"
+
+        if revenue_2022 and revenue_2023:
+            sales_ratio = (revenue_2023 -revenue_2022) / revenue_2022
+        else:
+            sales_ratio = None
+
+        revenue_2023_formatted = format_revenue(revenue_2023)
+        revenue_2022_formatted = format_revenue(revenue_2022)
+
+        return {
+            "name": ticker_info.get("longName", "Unknown"),
+            "sector": ticker_info.get("sector", "Unknown"),
+            "industry": ticker_info.get("industry", "Unknown"),
+            "revenue_2023": revenue_2023_formatted,
+            "revenue_2022": revenue_2022_formatted,
+            "sales_ratio": f"{sales_ratio * 100:.2f}%" if sales_ratio else "N/A" 
+        }
+    except Exception as e:
+        return {
+            "name": "Unknown",
+            "sector": "Unknown",
+            "industry": "Unknown",
+            "revenue_2023": "N/A",
+            "revenue_2022": "N/A"
+        }
+# Chargement des tickers
+all_tickers = get_all_tickers()
+
+# --- Liste déroulante de sélection
 selected_tickers = st.sidebar.multiselect(
-    "Select Stock Tickers (up to 5)",
-    options=available_tickers,
-    default=['AAPL', 'MSFT'],
-    help="A ticker is a unique symbol used to identify a stock on the exchange."
+    "✅ Select tickers (up to 3) :",
+    options=all_tickers,
+    default=[],
+    help="Select the tickers of the actions to be included in the simulation."
 )
+
+if len(selected_tickers) > 3:
+    st.sidebar.warning("You can only select up to 3 tickers. Please deselect some tickers.")
+    st.stop()  # Stoppe l'exécution de l'application si plus de 3 tickers sont sélectionnés
 
 if len(selected_tickers) == 0:
     st.sidebar.warning("Please select at least one ticker to start the simulation.")
@@ -130,28 +199,30 @@ if selected_tickers:
     min_value = np.min(final_values)
     profit_probability = np.sum(final_values > initial_investment) / mc_sims
 
-    st.write("### Simulation Results")
-    st.markdown("""
-    <div style='
-        background-color: white;
-        border-radius: 10px;
-        padding: 15px;
-        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-        margin-bottom: 15px;
-    '>
-    """ + 
-    f"""
-    **Average Portfolio Value:** <span style='color: blue'>{mean_value:.2f} €</span><br>
+# Affichage des résultats avec des couleurs
+    st.markdown("---")
+    st.markdown(
+    f"✅ **Average portfolio value :** "
+    f"<span style='color: orange; font-weight: bold;'>{mean_value:.2f} €</span>",
+    unsafe_allow_html=True
+)
+    st.markdown(
+    f"📈 **Maximum value reached :** "
+    f"<span style='color: green; font-weight: bold;'>{max_value:.2f} €</span>",
+    unsafe_allow_html=True
+)
+    st.markdown(
+    f"📉 **Minimum value reached :** "
+    f"<span style='color: red; font-weight: bold;'>{min_value:.2f} €</span>",
+    unsafe_allow_html=True
+)
+    st.markdown(
+    f"🎯 **Probability of profit (> {initial_investment} €) :** "
+    f"<span style='color: white; font-weight: bold;'>{profit_probability:.2%}</span>",
+    unsafe_allow_html=True
+)
+    st.markdown("---")
 
-    **Maximum Value Reached:** <span style='color: blue'>{max_value:.2f} €</span><br>
-
-    **Minimum Value Reached:** <span style='color: blue'>{min_value:.2f} €</span><br>
-
-    **Profit Probability (> {initial_investment} €):** <span style='color: blue'>{profit_probability:.2%}</span>
-    """ + 
-    """
-    </div>
-    """, unsafe_allow_html=True)
     
     # --- Returns Histogram
     portfolio_returns = (final_values - initial_investment) / initial_investment * 100
@@ -192,15 +263,30 @@ if selected_tickers:
         .background_gradient(cmap='coolwarm', axis=0), use_container_width=True)
 
     st.write("""
-        **La volatilité** mesure les fluctuations des prix des actions sur une période donnée.
-        - **Volatilité GARCH** : Basée sur les données historiques, elle représente une estimation dynamique de la volatilité conditionnelle future.
+        **Volatility** measures share price fluctuations over a given period.
+        - GARCH volatility**: Based on historical data, it represents a dynamic estimate of future conditional volatility.
     """)
 
     st.write(
         """
-        ***Interprétation de la volatilité GARCH :***  
-        Une volatilité plus élevée (par exemple, 2% ou plus) signifie que le prix de l'action peut fluctuer fortement, ce qui indique un risque plus élevé mais aussi une possibilité de gains plus importants.  
+         ***GARCH volatility interpretation:***  
+        Higher volatility (e.g. 2% or more) means that the share price can fluctuate widely, indicating higher risk but also the potential for greater gains.  
 
-        Une volatilité plus faible (moins de 1%) reflète une action relativement stable, généralement associée à un risque plus faible mais aussi à des rendements potentiels plus modestes.
+        Lower volatility (less than 1%) reflects a relatively stable share price, generally associated with lower risk but also more modest potential returns.
         """
     ) 
+
+# --- Afficher les informations pour les tickers sélectionnés
+if selected_tickers:
+    st.subheader("📄 Company information on selected tickers")
+    ticker_details = []
+    for ticker in selected_tickers:
+        info = get_ticker_info(ticker)
+        ticker_details.append(info)
+        st.markdown(f"""
+        **{ticker}** - {info['name']}  
+        - 🏢 **Sector** : {info['sector']}  
+        - 🏭 **Industry** : {info['industry']}  
+        - 💰 **Annual sales 2022** : {info['revenue_2022']}  
+        - 💰 **Annual sales 2023** : {info['revenue_2023']} 
+        - 📊 **Sales Growth Ratio (2023/2022)** :  {info['sales_ratio']}        """)
