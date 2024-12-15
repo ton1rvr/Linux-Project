@@ -32,4 +32,4 @@ esac
 
 # Installer Streamlit
 echo "Installation de Streamlit..."
-pip3 install streamlit pandas plotly arch
+pip3 install streamlit pandas plotly arch matplotlib.pyplot
