@@ -236,18 +236,20 @@ if selected_tickers:
 
     # --- Monte Carlo Simulations Plot
     st.write("### Monte Carlo Simulations")
-    plt.plot(portfolio_sims, alpha=0.3)
+    plt.figure(figsize=(8, 5))
 
     cmap = plt.get_cmap("Spectral")  
     num_colors = portfolio_sims.shape[1]  
 
-    for i in range(num_colors):
-        plt.plot(portfolio_sims[:, i], color=cmap(i / num_colors), alpha=0.4) 
-    plt.plot(np.mean(portfolio_sims, axis=1), color='red', linewidth=2, label='Mean trajectory') 
-    plt.ylabel('Portfolio Value (€)')
+    days = np.arange(0, T) 
+    for m in range(mc_sims):
+        plt.plot(days, portfolio_sims[:, m], color=cmap(m/ num_colors), alpha=0.25)
+
+    plt.plot(days, np.mean(portfolio_sims, axis=1), color='red', linewidth=2, label='Mean trajectory')
     plt.xlabel('Days')
-    plt.legend(loc='upper left')
+    plt.ylabel('Portfolio Value (€)')
     plt.title('Portfolio Monte Carlo Simulation')
+    plt.legend()
     st.pyplot(plt)
 
     # --- GARCH Volatility Table
