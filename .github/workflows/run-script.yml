@@ -1,0 +1,20 @@
+name: Exécuter le script Bash avec la clé API
+
+on: 
+  push:
+
+jobs:
+  run-script:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout du dépôt
+        uses: actions/checkout@v3
+
+      - name: Rendre le script exécutable
+        run: chmod +x extraction/fetch_data.sh
+
+      - name: Exécuter le script avec la clé API
+        run: ./extraction/fetch_data.sh
+        env:
+          API_KEY: ${{ secrets.API_KEY }}
