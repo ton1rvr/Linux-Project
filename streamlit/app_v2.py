@@ -218,7 +218,7 @@ if selected_tickers:
 )
     st.markdown(
     f"🎯 **Probability of profit (> {initial_investment} €) :** "
-    f"<span style='color: white; font-weight: bold;'>{profit_probability:.2%}</span>",
+    f"<span style='color: blue ; font-weight: bold;'>{profit_probability:.2%}</span>",
     unsafe_allow_html=True
 )
     st.markdown("---")
